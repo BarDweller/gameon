@@ -11,15 +11,11 @@ then
   exit
 fi
 
-if [ -z ${ENCRYPTION_LABEL} ]
-then
-  echo ENCRYPTION_LABEL not set
-  exit
-fi
-
 echo "Cloning root project..."
 git clone https://github.com/gameontext/gameon.git
 cd gameon
+
+git checkout modules
 REPO=`git config remote.origin.url`
 SSH_REPO=${REPO/https:\/\/github.com\//git@github.com:}
 
@@ -51,6 +47,11 @@ git checkout ${TRAVIS_COMMIT}
 cd ..
 echo "Pushing my commit..."
 git commit -a -m ":arrow_up: Updating to latest version of ${SUBMODULE}..." || true
-git log origin..HEAD || true
+
+# If there are no changes to the submodule version (there should be)
+if git diff --quiet; then
+    echo "No changes to the output on this push; exiting."
+    exit 0
+fi
 echo  git push $SSH_REPO master
 #git push $SSH_REPO master || true
